@@ -528,6 +528,8 @@ def nomesdasmaos(r):
         mao = 'FLUSH'           #FLUSH
     elif r >= 1101 and r<= 1231:
         mao = 'FULL-HOUSE'      #FULLHOUSE
+    elif r>= 2110 and r <= 2690:
+        mao = 'QUADRA'          #FOUR OF A KIND
     elif r >= 3000 and r<= 27000:
         mao = 'STRAIGHT FLUSH'  
     elif r == 30000:
@@ -620,6 +622,7 @@ elif ranktotalp1 == ranktotalp2:
                 
             else:
                 vencedorrank = 0
+                vencedor = 0
 
         elif maop1string == 'TRINCA': 
             
@@ -642,3 +645,66 @@ elif ranktotalp1 == ranktotalp2:
                     vencedorrank = 0
                     vencedor = 0 
         print(f'{vencedor} venceu com um {maop1string}') 
+
+
+
+def melhorrank(mao):
+
+    """Runs all the functions on one hand and returns its MAX rank"""
+    
+    melhorhc = cartaalta(mao)
+    melhorpares = par(melhorhc, mao)
+    melhorpares2 = maofinalpar(melhorpares, mao)
+    melhorrankpar = maoparrank(melhorpares2, melhorhc, mao)
+    maomtrinca = trinca(melhorhc, mao)
+    maomelhortrinca = maofinaltrinca(maomtrinca, mao)
+    ranktrincamelhor = maotrincarank (melhorhc, mao)
+    maomelhorquad = quadra(melhorhc, mao)
+    maoquadmelhor = maofinalquadra(maomelhorquad, mao)
+    maoquadrankmelhor = maoquadrank(maoquadmelhor)
+    maomelhorseq = sequencia(melhorhc, mao)
+    maomelhorseqrank = maoseqrank(maomelhorseq)  
+    maomelhorflush = flush(mao)
+    maomelhorflurank = maoflushrank(maomelhorflush)
+    maomelhorfhrank = maofhrank(melhorpares2, maomtrinca)
+    maomelhorstrflurank = straightflush(maomelhorflush)
+    
+    maiorrank = max([
+        melhorrankpar,ranktrincamelhor,maoquadrankmelhor,
+        maomelhorfhrank,maomelhorflurank,
+        maomelhorseqrank,maomelhorstrflurank
+        ])
+    
+    return maiorrank
+    
+best_hand = mesa #The best possible hand starts with only the table
+best_rankpossb = 0 #rank to beat, could be player 1 ranktotalp1 and add a break to its if
+best_hand_final = []
+
+#make all non used cards iterables between each other and finds the max rank
+#possible whithin this table
+
+for carta1 in embb:    
+    if carta1 not in maop1f:
+        best_hand.append(carta1)
+        for carta2 in embb:
+            if carta2 not in best_hand and carta2 not in maop1f:
+                best_hand.append(carta2)
+                maiorrank = melhorrank(best_hand)
+                if maiorrank > ranktotalp1: 
+                    #if set to > best_rankpossb var it will always get the best possible hand
+                    #here it beats only player1                   
+
+                    best_rankpossb = maiorrank
+                    best_hand_final = []
+                    best_hand_final = best_hand[:]                    
+                    best_hand.pop()
+                    
+                else:                    
+                    best_hand.pop()
+        else:
+            best_hand.pop()       
+                    
+print('melhor mao possivel: ', best_hand_final) #Best possible hand + table
+print('Rank: ' ,best_rankpossb)
+print(f'{nomesdasmaos(best_rankpossb)}')

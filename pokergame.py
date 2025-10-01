@@ -82,7 +82,10 @@ def main (page: ft.Page):
 
         importlib.reload(pkl)
         cartasp1.data = pkl.maoplayer1
-        cartasp2.data = pkl.maoplayer2
+        if diff.value == 'Impossible Mode ON':
+            cartasp2.data = [pkl.best_hand_final[-2],pkl.best_hand_final[-1]]
+        else:
+            cartasp2.data = pkl.maoplayer2
         cartasp1.controls = criarcarta(cartasp1.data)
         cartasp2.controls = backcard        
         mesa = pkl.mesa
@@ -358,22 +361,27 @@ def main (page: ft.Page):
              
         
 
-    insertsaldo = ft.TextField(label="Insira o saldo de fichas: ",value='0')
+    insertsaldo = ft.TextField(label="Insira o saldo de fichas: ",value='')
     btiniciar = ft.ElevatedButton(text="Iniciar",on_click=iniciar)
 
     def vencedor(): 
 
         """Gets the winner from the poker logic file and does the pot division"""       
         
-        global win
+        global win        
         venceu = 0
+        p2hand = pkl.maop2string
         
+        if diff.value == 'Impossible Mode ON':
+            win = 'PLAYER2'
+            p2hand = pkl.nomesdasmaos(pkl.best_rankpossb)
+
         if win == 'PLAYER1':
             venceu = f'Player 1 Venceu com um: {pkl.maop1string}'
             saldop1.value = int(saldop1.value) + int(pot.value)
             pot.value = '0'
         elif win == 'PLAYER2':
-            venceu = f'Player 2 Venceu com um: {pkl.maop2string}'
+            venceu = f'Player 2 Venceu com um: {p2hand}'
             saldop2.value = int(saldop2.value) + int(pot.value)
             pot.value = '0'            
         elif win == 0:
@@ -676,12 +684,38 @@ def main (page: ft.Page):
             mensagem,jogador2,pot,cartasmesa,jogador1
         ]
     )
-
+    
     #Buttons
     botoes = ft.Row(
         alignment= ft.MainAxisAlignment.END,
         controls=[fold,check,bet,slidertext,betslider]        
     )
+
+    def modo(e):
+
+        if diff.value == 'Impossible Mode ON':
+            diff.value = 'Impossible Mode OFF'
+        else:
+            diff.value = 'Impossible Mode ON'
+        page.update()
+
+    unbeatable_btn = ft.ElevatedButton(
+        text="ON/OFF",
+        on_click=modo,
+        color=ft.Colors.RED
+        )
+    unbeatable = ft.Column(
+        alignment= ft.MainAxisAlignment.CENTER,
+        horizontal_alignment= ft.CrossAxisAlignment.CENTER,                           
+        controls=[
+            diff := ft.Text(
+                value='Impossible Mode ON',
+                size= 12,
+                text_align='center',
+                weight= ft.FontWeight.BOLD),
+            unbeatable_btn
+            ]
+            )
     
     #Game layout
     telajogo = ft.Column(
@@ -695,7 +729,7 @@ def main (page: ft.Page):
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment= ft.CrossAxisAlignment.CENTER,
         controls=[
-            insertsaldo,btiniciar
+            insertsaldo,btiniciar,unbeatable
             ]         
     )
 
